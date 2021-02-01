@@ -270,22 +270,22 @@ static void binary_inspection(entry_info *idt_entry)
 	{
 		if (idt_entry->name)
 		{
-			pr_info("[Kernel Inspection] : Binary inspection starting from the \"%s\" routine (IDT index: %hu)", idt_entry->name, idt_entry->index);
+			pr_info("[Interrupt Handler Binary Inspection] : Binary inspection starting from the \"%s\" routine (IDT index: %hu)", idt_entry->name, idt_entry->index);
 		}
 #ifdef CONFIG_KALLSYMS
 		else if ((symbol_size = sprint_symbol(symbol_buffer, idt_entry->address)) > 0)
 		{
-			pr_info("[Kernel Inspection] : Binary inspection starting from the \"%s\" routine (IDT index: %hu)", symbol_buffer, idt_entry->index);
+			pr_info("[Interrupt Handler Binary Inspection] : Binary inspection starting from the \"%s\" routine (IDT index: %hu)", symbol_buffer, idt_entry->index);
 		}
 #endif
 		else
 		{
-			pr_info("[Kernel Inspection] : Binary inspection starting from a routine with unknown name (IDT index: %hu)", idt_entry->index);
+			pr_info("[Interrupt Handler Binary Inspection] : Binary inspection starting from a routine with unknown name (IDT index: %hu)", idt_entry->index);
 		}
 
 		if (check_page_is_valid_get_frame_number(idt_entry->address) == -1)
 		{
-			pr_err("[Kernel Inspection] : The address stored within the IDT entry with index %hu is in a non-mapped page\n", idt_entry->index);
+			pr_err("[Interrupt Handler Binary Inspection] : The address stored within the IDT entry with index %hu is in a non-mapped page\n", idt_entry->index);
 			return;
 		}
 
@@ -322,7 +322,7 @@ follow_jump:
 					goto level_switch;
 				}
 				
-				pr_info("[Kernel Inspection] : Binary inspection finished\n");
+				pr_info("[Interrupt Handler Binary Inspection] : Binary inspection finished\n");
 				break;
 			}
 			else if (byte[b] == 0xE9 || byte[b] == 0xEA || byte[b] == 0xEB) // JMP
@@ -436,11 +436,11 @@ static int collect_IDT_entry_info(void)
 			return 0;
 		}
 
-		pr_err("[Kernel Inspection] : Cannot allocate space to maintain information from IDT entries\n");
+		pr_err("[Interrupt Handler Binary Inspection] : Cannot allocate space to maintain information from IDT entries\n");
 	}
 	else
 	{
-		pr_err("[Kernel Inspection] : Cannot access the \"idtr\" register in order to diplace within the IDT table\n");
+		pr_err("[Interrupt Handler Binary Inspection] : Cannot access the \"idtr\" register in order to diplace within the IDT table\n");
 	}
 
 	return -1;
@@ -455,12 +455,12 @@ static void clean_IDT_entry_info(void)
 
 static __init int kernel_inspection_init(void)
 {
-	pr_info("[Kernel Inspection] : Initialization\n");
+	pr_info("[Interrupt Handler Binary Inspection] : Initialization\n");
 
 #ifdef CONFIG_X86_64
 	if (collect_IDT_entry_info())
 	{
-		pr_err("[Kernel Inspection] : Cannot proceed with a binary inspection\n");
+		pr_err("[Interrupt Handler Binary Inspection] : Cannot proceed with a binary inspection\n");
 		return -1;
 	}
 # if defined IDT_INDEX && IDT_INDEX >= 0 && IDT_INDEX < 256
@@ -469,7 +469,7 @@ static __init int kernel_inspection_init(void)
 	binary_inspection(&idt_entries[SPURIOUS_APIC_VECTOR]);
 # endif
 #else
-	pr_err("[Kernel Inspection] : Works only on x86_64 architectures\n");
+	pr_err("[Interrupt Handler Binary Inspection] : Works only on x86_64 architectures\n");
 #endif
 
 	return 0;
@@ -481,7 +481,7 @@ static __exit void kernel_inspection_exit(void)
 	clean_IDT_entry_info();
 #endif
 
-	pr_info("[Kernel Inspection] : Finalization\n");
+	pr_info("[Interrupt Handler Binary Inspection] : Finalization\n");
 }
 
 module_init(kernel_inspection_init);
@@ -489,4 +489,4 @@ module_exit(kernel_inspection_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Emiliano Silvestri <silvestri@diag.uniroma1.it>");
-MODULE_DESCRIPTION("Inspection of x86_64 kernel's binaries exploiting the addresses kept by IDT entries");
+MODULE_DESCRIPTION("Binary Inspection of Linux Interrupt Handlers on x86_64 Architectures");
